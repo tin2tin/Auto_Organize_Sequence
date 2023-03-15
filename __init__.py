@@ -74,7 +74,7 @@ class StripArrangeOperator(bpy.types.Operator):
         # Get all the strips in the VSE
         strips = vse.sequences_all
 
-        channels_with_strips = [s.channel for s in bpy.context.scene.sequence_editor.sequences if s.type != 'SOUND']
+        channels_with_strips = [s.channel for s in bpy.context.scene.sequence_editor.sequences]
         lowest_channel = min(channels_with_strips)
 
 
