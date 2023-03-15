@@ -1,1 +1,1 @@
-# strip_arrange
+# Strip Arrange
