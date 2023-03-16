@@ -8,9 +8,14 @@ Concentrate sequence by moving strips down while preserving their vertical order
 ## Categorize Sequence
 Group strip according to their types and rename the channel headers accordingly.
 
-https://user-images.githubusercontent.com/1322593/225363326-e0e22714-1e58-45f6-95be-7e9e2d1f4071.mp4
-
 Warning: If the vertical order of the strips is important, this function shouldn't be used.
+
+## Tutorial
+
+
+https://user-images.githubusercontent.com/1322593/225592891-625cd36c-9935-4dfc-9b18-693e7c790969.mp4
+
+
 
 ## Where
 Sequencer > Strip > Concentrate/Categorize
