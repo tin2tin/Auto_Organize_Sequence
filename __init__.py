@@ -115,7 +115,7 @@ class CategorizeSequenceOperator(bpy.types.Operator):
 
 
 class ConcentrateSequenceOperator(bpy.types.Operator):
-    """Concentrate sequence by moving strips down without ruining the vertical logic"""
+    """Concentrate sequence by moving strips down without ruining the vertical order"""
 
     bl_idname = "sequencer.concentrate_sequence"
     bl_label = "Concentrate"
