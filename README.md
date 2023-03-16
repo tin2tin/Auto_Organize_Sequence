@@ -1,4 +1,4 @@
-# Strip Arrange
+# Categorize Sequence
 
 Blender add-on to arrange strips according to strip types and rename the channel headers accordingly.
 
