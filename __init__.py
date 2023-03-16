@@ -1,9 +1,9 @@
 bl_info = {
-    "name": "Strip Arrange",
+    "name": "Categorize Sequence",
     "author": "tintwotin",
     "version": (1, 0),
     "blender": (3, 40, 0),
-    "location": "Video Sequence Editor > Strip > Strip Arrange",
+    "location": "Video Sequence Editor > Strip > Categorize Sequence",
     "description": "Flattens channels by moving strips of the same type into the same channels without overlapping them and rename channel headers accordingly",
     "warning": "",
     "doc_url": "",
@@ -15,11 +15,11 @@ from operator import attrgetter
 from collections import OrderedDict
 
 
-class StripArrangeOperator(bpy.types.Operator):
-    """Strip arrange by automatic grouping strips of the same type into channels, which are renamed accordingly"""
+class CategorizeSequenceOperator(bpy.types.Operator):
+    """Categorize Sequence by automatic grouping strips of the same type into channels, which are renamed accordingly"""
 
-    bl_idname = "sequencer.strip_arrange"
-    bl_label = "Strip Arrange"
+    bl_idname = "sequencer.categorize_sequence"
+    bl_label = "Categorize Sequence"
     bl_options = {"REGISTER", "UNDO"}
 
     @classmethod
@@ -45,8 +45,6 @@ class StripArrangeOperator(bpy.types.Operator):
         # Loop through each strip type and move strips into the first empty channel for that type
         for strip_type, strips in strip_types.items():
             new_channel = max(strip.channel for strip in context.sequences) + 1
-            # channel = context.scene.sequence_editor.channels[new_channel]
-            # channel.name = strip_type.title()
 
             for strip in strips:
                 overlap_channel = new_channel
@@ -59,8 +57,6 @@ class StripArrangeOperator(bpy.types.Operator):
                     ):
                         # Move the strip to the new channel
                         strip.channel = overlap_channel
-                        # channel = context.scene.sequence_editor.channels[overlap_channel]
-                        # channel.name = strip_type.title()
                         return
                     # Increment the channel index and check again
                     overlap_channel += 1
@@ -108,19 +104,19 @@ class StripArrangeOperator(bpy.types.Operator):
         return {"FINISHED"}
 
 
-def add_strip_arrange_operator_to_menu(self, context):
+def add_categorize_sequence_operator_to_menu(self, context):
     self.layout.separator()
-    self.layout.operator(StripArrangeOperator.bl_idname)
+    self.layout.operator(CategorizeSequenceOperator.bl_idname)
 
 
 def register():
-    bpy.utils.register_class(StripArrangeOperator)
-    bpy.types.SEQUENCER_MT_strip.append(add_strip_arrange_operator_to_menu)
+    bpy.utils.register_class(CategorizeSequenceOperator)
+    bpy.types.SEQUENCER_MT_strip.append(add_categorize_sequence_operator_to_menu)
 
 
 def unregister():
-    bpy.utils.unregister_class(StripArrangeOperator)
-    bpy.types.SEQUENCER_MT_strip.remove(add_strip_arrange_operator_to_menu)
+    bpy.utils.unregister_class(CategorizeSequenceOperator)
+    bpy.types.SEQUENCER_MT_strip.remove(add_categorize_sequence_operator_to_menu)
 
 
 if __name__ == "__main__":
