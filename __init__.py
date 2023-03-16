@@ -1,12 +1,12 @@
 bl_info = {
-    "name": "Categorize Sequence",
+    "name": "Arrange Sequence",
     "author": "tintwotin",
     "version": (1, 0),
     "blender": (3, 40, 0),
-    "location": "Video Sequence Editor > Strip > Categorize Sequence",
-    "description": "Flattens channels by moving strips of the same type into the same channels without overlapping them and rename channel headers accordingly",
+    "location": "Sequencer > Strip > Concentrate/Categorize",
+    "description": "Moves strips down without ruining the vertical logic",
     "warning": "",
-    "doc_url": "",
+    "wiki_url": "",
     "category": "Sequencer",
 }
 
@@ -14,12 +14,22 @@ import bpy
 from operator import attrgetter
 from collections import OrderedDict
 
+class SEQUENCER_MT_SequenceMenu(bpy.types.Menu):
+    bl_idname = "SEQUENCER_MT_sequence_menu"
+    bl_label = "Sequence"
+
+    def draw(self, context):
+        layout = self.layout
+
+        layout.operator("sequencer.concentrate_sequence")
+        layout.operator("sequencer.categorize_sequence")
+
 
 class CategorizeSequenceOperator(bpy.types.Operator):
-    """Categorize Sequence by automatic grouping strips of the same type into channels, which are renamed accordingly"""
+    """Categorize sequence by automatic grouping strips of the same type and rename channels accordingly"""
 
     bl_idname = "sequencer.categorize_sequence"
-    bl_label = "Categorize Sequence"
+    bl_label = "Categorize"
     bl_options = {"REGISTER", "UNDO"}
 
     @classmethod
@@ -104,20 +114,61 @@ class CategorizeSequenceOperator(bpy.types.Operator):
         return {"FINISHED"}
 
 
-def add_categorize_sequence_operator_to_menu(self, context):
-    self.layout.separator()
-    self.layout.operator(CategorizeSequenceOperator.bl_idname)
+class ConcentrateSequenceOperator(bpy.types.Operator):
+    """Concentrate sequence by moving strips down without ruining the vertical logic"""
 
+    bl_idname = "sequencer.concentrate_sequence"
+    bl_label = "Concentrate"
+
+    def execute(self, context):
+        sequences = list(context.scene.sequence_editor.sequences)
+        sequences.sort(key=lambda strip: (strip.channel, strip.frame_final_start))
+        
+        for strip in sequences:
+            original_channel = strip.channel
+            lower_strips = [seq for seq in sequences if seq.channel < original_channel]
+            lower_strips = sorted(lower_strips, key=lambda strip: strip.channel, reverse=True)
+            next_channel = original_channel - 1
+            
+            for lower_strip in lower_strips:
+                if lower_strip.frame_final_end >= strip.frame_final_start and lower_strip.frame_final_start <= strip.frame_final_end:
+                    next_channel = lower_strip.channel +1
+                    break
+                else:
+                    if next_channel > 1: next_channel -= 1
+            
+            if next_channel < 1:
+                strip.channel = 1
+            else:
+                strip.channel = next_channel
+
+        # Rename Channels - Get a list of all the channels in the sequence editor
+        channels = bpy.context.scene.sequence_editor.sequences_all
+
+        # Loop through the channels from the lowest channel number to the highest
+        for i in range(128):
+            # Rename the channels
+            channel = context.scene.sequence_editor.channels[i]
+            channel.name = "Channel " + str(i)
+        
+        return {'FINISHED'}
+
+def append_sequence_menu(self, context):
+    self.layout.menu("SEQUENCER_MT_sequence_menu")
+    self.layout.separator()
 
 def register():
+    bpy.utils.register_class(ConcentrateSequenceOperator)
     bpy.utils.register_class(CategorizeSequenceOperator)
-    bpy.types.SEQUENCER_MT_strip.append(add_categorize_sequence_operator_to_menu)
+    bpy.utils.register_class(SEQUENCER_MT_SequenceMenu)
+    bpy.types.SEQUENCER_MT_editor_menus.append(append_sequence_menu)
 
 
 def unregister():
+    bpy.utils.unregister_class(ConcentrateSequenceOperator)
     bpy.utils.unregister_class(CategorizeSequenceOperator)
-    bpy.types.SEQUENCER_MT_strip.remove(add_categorize_sequence_operator_to_menu)
-
+    bpy.utils.unregister_class(SEQUENCER_MT_SequenceMenu)
+    bpy.types.SEQUENCER_MT_editor_menus.remove(append_sequence_menu)
 
 if __name__ == "__main__":
     register()
