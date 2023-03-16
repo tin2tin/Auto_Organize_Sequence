@@ -3,7 +3,7 @@
 Blender add-on to automatic clean up the sequence.
 
 ## Concentrate Sequence
-Concentrate sequence by moving strips down without ruining the vertical logic, and restore channel naming.
+Concentrate sequence by moving strips down without ruining the vertical order, and restore channel naming.
 
 ## Categorize Sequence
 Group strip according to their types and rename the channel headers accordingly.
