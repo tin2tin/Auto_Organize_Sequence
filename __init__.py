@@ -21,6 +21,8 @@ class SEQUENCER_MT_SequenceMenu(bpy.types.Menu):
     def draw(self, context):
         layout = self.layout
 
+        layout.operator("sequencer.combined_sequence")
+        layout.separator()
         layout.operator("sequencer.concentrate_sequence")
         layout.operator("sequencer.categorize_sequence")
 
@@ -121,22 +123,32 @@ class ConcentrateSequenceOperator(bpy.types.Operator):
     bl_label = "Concentrate"
 
     def execute(self, context):
+        # Get all sequences and sort them by channel and start frame
         sequences = list(context.scene.sequence_editor.sequences)
         sequences.sort(key=lambda strip: (strip.channel, strip.frame_final_start))
         
+        # Iterate through each strip in the sorted sequences
         for strip in sequences:
             original_channel = strip.channel
+            # Get all strips with lower channel numbers
             lower_strips = [seq for seq in sequences if seq.channel < original_channel]
+            # Sort the lower strips by channel in descending order
             lower_strips = sorted(lower_strips, key=lambda strip: strip.channel, reverse=True)
             next_channel = original_channel - 1
             
-            for lower_strip in lower_strips:
-                if lower_strip.frame_final_end >= strip.frame_final_start and lower_strip.frame_final_start <= strip.frame_final_end:
-                    next_channel = lower_strip.channel +1
-                    break
-                else:
-                    if next_channel > 1: next_channel -= 1
+            # Iterate from strip.channel to 1
+            for current_channel in range(strip.channel, 0, -1):
+                # Iterate through each lower strip
+                for lower_strip in lower_strips:
+                    # Check if the lower strip overlaps with the current strip
+                    if lower_strip.frame_final_end >= strip.frame_final_start and lower_strip.frame_final_start <= strip.frame_final_end:
+                        next_channel = lower_strip.channel + 1
+                        break
+                    else:
+                        # If no overlap, decrement the next_channel if it's greater than 1
+                        if next_channel > 1: next_channel -= 1
             
+            # Set the strip's channel to 1 if next_channel is less than 1, otherwise set it to next_channel
             if next_channel < 1:
                 strip.channel = 1
             else:
@@ -151,7 +163,69 @@ class ConcentrateSequenceOperator(bpy.types.Operator):
             channel = context.scene.sequence_editor.channels[i]
             channel.name = "Channel " + str(i)
         
+        # Return 'FINISHED' status
         return {'FINISHED'}
+
+
+class CombinedSequenceOperator(bpy.types.Operator):
+    """Categorize sequence by automatic grouping sound strips below and concentrate everything above"""
+
+    bl_idname = "sequencer.combined_sequence"
+    bl_label = "Combined"
+    bl_options = {"REGISTER", "UNDO"}
+
+    @classmethod
+    def poll(cls, context):
+        return context.area.type == "SEQUENCE_EDITOR"
+
+    def execute(self, context):
+        # Get the current active sequence editor
+        seq_editor = bpy.context.scene.sequence_editor
+        if not seq_editor:
+            print("No active sequence editor found.")
+            return
+        selection = sorted(
+            seq_editor.sequences, key=attrgetter("channel", "frame_final_start")
+        )
+
+        # Loop through each strip in the editor and group them by strip type
+        strip_types = {}
+        for strip in selection:
+            if strip.type == 'SOUND':
+                if strip.type not in strip_types:
+                    strip_types[strip.type] = []
+                strip_types[strip.type].append(strip)
+        # Loop through each strip type and move strips into the first empty channel for that type
+        for strip_type, strips in strip_types.items():
+            new_channel = max(strip.channel for strip in context.sequences) + 1
+
+            for strip in strips:
+                overlap_channel = new_channel
+                while overlap_channel < 128:
+                    # Check if the new channel is already occupied
+                    if not any(
+                        strip.frame_final_start <= s.frame_final_end
+                        and s.frame_final_start <= strip.frame_final_end
+                        for s in strips
+                    ):
+                        # Move the strip to the new channel
+                        strip.channel = overlap_channel
+                        return
+                    # Increment the channel index and check again
+                    overlap_channel += 1
+                # Move the strip to the new channel
+                strip.channel = new_channel
+
+        selection = sorted(
+            seq_editor.sequences, key=attrgetter("channel", "frame_final_start")
+        )
+        for strip in selection:
+            if strip.type != 'SOUND':
+                strip.channel += (new_channel - strip.channel)
+        for i in range(new_channel):
+            bpy.ops.sequencer.concentrate_sequence()
+        return {'FINISHED'}
+
 
 def append_sequence_menu(self, context):
     self.layout.menu("SEQUENCER_MT_sequence_menu")
@@ -159,12 +233,14 @@ def append_sequence_menu(self, context):
 
 def register():
     bpy.utils.register_class(ConcentrateSequenceOperator)
+    bpy.utils.register_class(CombinedSequenceOperator)
     bpy.utils.register_class(CategorizeSequenceOperator)
     bpy.utils.register_class(SEQUENCER_MT_SequenceMenu)
     bpy.types.SEQUENCER_MT_editor_menus.append(append_sequence_menu)
 
 
 def unregister():
+    bpy.utils.unregister_class(CombinedSequenceOperator)
     bpy.utils.unregister_class(ConcentrateSequenceOperator)
     bpy.utils.unregister_class(CategorizeSequenceOperator)
     bpy.utils.unregister_class(SEQUENCER_MT_SequenceMenu)
