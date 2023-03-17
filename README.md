@@ -12,7 +12,7 @@ Warning: If the vertical order of the strips is important, this function shouldn
 
 ## Combined
 
-Collect all Sound strips in the bottom with categorize and cencentrate everything else above.
+Collect all sound strips in the bottom with categorize and cencentrate everything else above.
 
 ## Tutorial
 
