@@ -10,6 +10,10 @@ Group strip according to their types and rename the channel headers accordingly.
 
 Warning: If the vertical order of the strips is important, this function shouldn't be used.
 
+## Combined
+
+Collect all Sound strips in the bottom with categorize and cencentrate everything else above.
+
 ## Tutorial
 
 
