@@ -2,7 +2,7 @@ bl_info = {
     "name": "Arrange Sequence",
     "author": "tintwotin",
     "version": (1, 0),
-    "blender": (3, 40, 0),
+    "blender": (3, 4, 0),
     "location": "Sequencer > Strip > Concentrate/Categorize",
     "description": "Moves strips down without ruining the vertical logic",
     "warning": "",
