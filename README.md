@@ -1,9 +1,8 @@
-# Arrange Sequence
+# Auto Organize Sequence
 
-Blender add-on to automatic clean up the sequence.
+Blender add-on to automatically clean up the sequence.
 
-## Combined
-Collect all sound strips in the bottom categorize and concentrate everything else above.
+NB. This script has not been battle-tested so run it only on a VSE sequence in a full scene copy of your original VSE edit sequence. 
 
 ## Concentrate Sequence
 Concentrate sequence by moving strips down while preserving their vertical order and restoring channel naming.
@@ -14,6 +13,8 @@ Useful for preparing a timeline for EDL export: https://github.com/tin2tin/Expor
 
 Warning: If the vertical order of the strips is important, this function shouldn't be used.
 
+## Combined
+Concentrate all sound strips below, and above categorize and concentrate everything else.
 
 ## Tutorial
 
