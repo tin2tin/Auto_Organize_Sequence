@@ -184,6 +184,8 @@ class CombinedSequenceOperator(bpy.types.Operator):
         if not seq_editor:
             print("No active sequence editor found.")
             return
+        
+        new_channel = 1
         selection = sorted(
             seq_editor.sequences, key=attrgetter("channel", "frame_final_start")
         )
